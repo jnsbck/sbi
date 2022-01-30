@@ -34,6 +34,7 @@ from sbi.utils.sbiutils import (
     x_shape_from_simulation,
     match_theta_and_x_batch_shapes,
     z_score_parser,
+    DefaultEmbeddingRNN,
 )
 from sbi.utils.torchutils import (
     BoxUniform,

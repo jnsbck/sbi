@@ -830,3 +830,69 @@ def gradient_ascent(
         return argmax_, max_val
 
     return theta_transform.inv(best_theta_overall), max_val
+
+
+class DefaultEmbeddingRNN(nn.Module):
+    """Preconfigured RNN for embedding of sequence data.
+
+    Attributes:
+        n_layers: Number of rnn layers.
+        rnn: RNN layers.
+        fc: Fully connected layer
+        relu: ReLU Activation
+    """
+
+    def __init__(self, n_layers=1):
+        """
+        Args:
+            n_layers: Number of rnn layers.
+        """
+        super(DefaultEmbeddingRNN, self).__init__()
+
+        self.n_layers = n_layers
+
+        self.rnn = None
+        self.fc = None
+        self.relu = nn.ReLU()
+
+    def input_reshape(self, x: Tensor) -> Tensor:
+        """Ensures input tensor is 3D.
+
+        Reshape so (batch_size, seq_len, input_size) assuming 1D sequence. If 2D input
+        is provided.
+
+        Args:
+            x: Input tensor.
+
+        Returns:
+            Reshaped input tensor if not 3D already.
+        """
+        if x.dim() == 3:
+            return x
+        elif x.dim() < 3:
+            return x.unsqueeze(2)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """RNN forward pass.
+
+        Args:
+            x: Input tensor (batch_size, seq_len, input_size) or (batch_size, seq_len)
+
+        Returns:
+            RNN output.
+        """
+        if self.rnn is None:
+            x = self.input_reshape(x)
+            num_dims = x.shape[-1]
+            # TODO: hidden dims == in dims?
+            self.rnn = nn.RNN(num_dims, num_dims, self.n_layers, batch_first=True)
+            self.fc = nn.Linear(num_dims, num_dims)
+
+        # reshape so (batch_size, seq_len, input_size) assuming 1D sequence
+        x = self.input_reshape(x)
+
+        x, hs = self.rnn(x)
+        x = self.fc(x)  # TODO: Fully Connected or Linear ?
+        x = self.relu(x)
+
+        return x
