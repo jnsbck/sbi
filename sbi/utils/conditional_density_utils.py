@@ -188,7 +188,7 @@ def extract_and_transform_mog(
     means_transformed = (means - shift) / scale
 
     A = scale * torch.eye(means_transformed.shape[2])
-    precfs_transformed = A @ precfs
+    precfs_transformed = precfs @ A
 
     sumlogdiag = torch.sum(
         torch.log(torch.diagonal(precfs_transformed, dim1=2, dim2=3)), dim=2
